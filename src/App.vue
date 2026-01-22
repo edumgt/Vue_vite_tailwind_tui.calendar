@@ -1,8 +1,7 @@
 <template>
-  <MyCalendar />
+  <CalendarView />
 </template>
 
-<script>
-import MyCalendar from "./components/HelloWorld.vue";
-export default { components: { MyCalendar } };
+<script setup lang="ts">
+import CalendarView from "./components/CalendarView.vue";
 </script>
