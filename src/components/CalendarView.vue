@@ -1,20 +1,40 @@
 <template>
-  <section class="p-4">
+  <section class="rounded-lg bg-white p-4 shadow">
     <header class="mb-4 flex items-center justify-between">
-      <h1 class="text-2xl font-bold">📅 TUI Calendar + Vue + Tailwind</h1>
-      <span class="text-sm text-slate-500">Sample schedule</span>
+      <h2 class="text-lg font-semibold">내 캘린더</h2>
+      <span class="text-xs text-slate-500">{{ events.length }}개 일정</span>
     </header>
-    <div ref="calendarEl" class="min-h-[600px] rounded-lg border shadow-lg"></div>
+    <div ref="calendarEl" class="min-h-[650px] rounded-lg border"></div>
   </section>
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from "vue";
-import Calendar from "tui-calendar";
-import "tui-calendar/dist/tui-calendar.css";
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import Calendar from 'tui-calendar';
+import 'tui-calendar/dist/tui-calendar.css';
+
+type CalendarEvent = {
+  id: string;
+  calendarId: string;
+  title: string;
+  category: 'time' | 'task';
+  start: string;
+  end: string;
+};
+
+const props = defineProps<{ events: CalendarEvent[] }>();
 
 const calendarEl = ref<HTMLDivElement | null>(null);
 let calendar: Calendar | null = null;
+
+function renderSchedules() {
+  if (!calendar) {
+    return;
+  }
+
+  calendar.clear();
+  calendar.createSchedules(props.events);
+}
 
 onMounted(() => {
   if (!calendarEl.value) {
@@ -22,26 +42,24 @@ onMounted(() => {
   }
 
   calendar = new Calendar(calendarEl.value, {
-    defaultView: "month",
+    defaultView: 'month',
     taskView: true,
-    scheduleView: ["time"],
+    scheduleView: ['time'],
     template: {
-      monthDayname: (dayname) =>
-        `<span class=\"text-blue-600\">${dayname.label}</span>`,
+      monthDayname: (dayname) => `<span class=\"text-blue-600\">${dayname.label}</span>`,
     },
   });
 
-  calendar.createSchedules([
-    {
-      id: "1",
-      calendarId: "1",
-      title: "회의",
-      category: "time",
-      start: "2025-08-27T10:30:00+09:00",
-      end: "2025-08-27T12:30:00+09:00",
-    },
-  ]);
+  renderSchedules();
 });
+
+watch(
+  () => props.events,
+  () => {
+    renderSchedules();
+  },
+  { deep: true },
+);
 
 onBeforeUnmount(() => {
   calendar?.destroy();
